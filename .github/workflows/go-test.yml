@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ./NewProxy
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,8 +22,18 @@ jobs:
         with:
           go-version: '1.25'
 
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Install dependencies
-        run: go mod download
+        run: go mod tidy
 
       - name: Run unit tests
         run: go test ./... -v -cover
