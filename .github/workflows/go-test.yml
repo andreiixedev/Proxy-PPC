@@ -1,0 +1,31 @@
+name: Go CI - Tests
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: go test ./... -v -cover
+
+      - name: Run vet & lint checks
+        run: |
+          go vet ./...
+          test -z "$(gofmt -l .)"
