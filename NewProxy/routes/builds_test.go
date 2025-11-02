@@ -1,24 +1,23 @@
-package tests
+package routes
 
 import (
 	"net/http"
 	"net/http/httptest"
-	"newproxy/routes"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 )
 
-func TestStatusHandler(t *testing.T) {
+func TestBuildsHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-	routes.RegisterStatusRoute(r)
+	RegisterBuildsRoute(r)
 
-	req, _ := http.NewRequest("GET", "/status", nil)
+	req, _ := http.NewRequest("GET", "/client/builds.json", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
-		t.Errorf("Expected status 200 OK, got %d", w.Code)
+		t.Errorf("Expected 200 OK, got %d", w.Code)
 	}
 }

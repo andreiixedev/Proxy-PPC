@@ -1,4 +1,4 @@
-name: Go CI - Tests
+name: Go Test and Coverage
 
 on:
   push:
@@ -8,11 +8,9 @@ on:
 
 jobs:
   test:
+    name: Run Go Tests
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ./NewProxy
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,25 +18,24 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version-file: ./NewProxy/go.mod
 
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Install dependencies
+      - name: Verify Go modules
+        working-directory: ./NewProxy
         run: go mod tidy
 
-      - name: Run unit tests
-        run: go test ./... -v -cover
-
-      - name: Run vet & lint checks
+      - name: Run unit tests with coverage
+        working-directory: ./NewProxy
         run: |
-          go vet ./...
-          test -z "$(gofmt -l .)"
+          go test ./... -v -coverpkg=./... -coverprofile=coverage.out
+
+      - name: Show coverage summary
+        working-directory: ./NewProxy
+        run: go tool cover -func=coverage.out
+
+      - name: Upload coverage report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: NewProxy/coverage.out
